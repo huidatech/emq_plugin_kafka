@@ -7,5 +7,8 @@
   {mod, {emqx_plugin_kafka_app,[]}},
   {env, []},
   {licenses, ["Apache-2.0"]},
-  {maintainers, ["EMQ X Team <contact@emqx.io>"]}
+  {maintainers, ["RFQ"]},
+  {links, [{"Homepage", "https://123.io/"},
+           {"Github", "https://github.com/FengqiRuan/emq_plugin_kafka.git"}
+          ]}
  ]}.

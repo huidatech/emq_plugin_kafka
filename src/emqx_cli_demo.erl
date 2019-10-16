@@ -14,7 +14,7 @@
 %% limitations under the License.
 %%--------------------------------------------------------------------
 
--module(emqx_cli_demo_kafka).
+-module(emqx_cli_demo).
 
 -export([cmd/1]).
 

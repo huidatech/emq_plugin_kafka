@@ -1,2 +1,2 @@
 
-emqx-plugin-template
+emqx-plugin-kafka
