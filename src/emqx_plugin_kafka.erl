@@ -27,7 +27,7 @@
 
 %% Called when the plugin application start
 load(Env) ->   
-    emqx:hook('message.publish', fun ?MODULE:on_message_publish/2, [Env])
+    emqx:hook('message.publish', fun ?MODULE:on_message_publish/2, [Env]).
 
 
 %% Transform message and return
@@ -42,6 +42,6 @@ on_message_publish(Message, _Env) ->
 
 %% Called when the plugin application stop
 unload() ->  
-    emqx:unhook('message.publish', fun ?MODULE:on_message_publish/2)
+    emqx:unhook('message.publish', fun ?MODULE:on_message_publish/2).
 
 
