@@ -23,9 +23,7 @@
         ]).
 
 %% Hooks functions
--export([ on_client_connected/4
-        , on_client_disconnected/3
-        , on_client_subscribe/4
+-export([ on_client_subscribe/4
         , on_client_unsubscribe/4
         , on_session_created/3
         , on_session_resumed/3
