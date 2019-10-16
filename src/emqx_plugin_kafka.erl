@@ -23,8 +23,7 @@
         ]).
 
 %% Hooks functions
--export([ on_message_publish/2 
-        ]).
+-export([on_message_publish/2]).
 
 %% Called when the plugin application start
 load(Env) ->   
