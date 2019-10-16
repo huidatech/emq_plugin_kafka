@@ -42,7 +42,7 @@
 
 %% Called when the plugin application start
 load(Env) ->
-    ekaf_init([Env]),
+%%    ekaf_init([Env]),
     emqx:hook('client.authenticate', fun ?MODULE:on_client_authenticate/2, [Env]),
     emqx:hook('client.check_acl', fun ?MODULE:on_client_check_acl/5, [Env]),
     emqx:hook('client.connected', fun ?MODULE:on_client_connected/4, [Env]),
@@ -121,14 +121,14 @@ on_message_dropped(#{clientid := ClientId}, Message, _Env) ->
     io:format("Message dropped by client ~s: ~s~n", [ClientId, emqx_message:format(Message)]).
 
 
-ekaf_init(_Env) ->
-    {ok, Values} = application:get_env(emqx_plugin_kafka, values),
-    BootstrapBroker = proplists:get_value(bootstrap_broker, Values),
-    PartitionStrategy= proplists:get_value(partition_strategy, Values),
-    application:set_env(ekaf, ekaf_partition_strategy, PartitionStrategy),
-    application:set_env(ekaf, ekaf_bootstrap_broker, BootstrapBroker),
-    {ok, _} = application:ensure_all_started(ekaf),
-    io:format("Initialized ekaf with ~p~n", [{"localhost", 9092}]).
+%%ekaf_init(_Env) ->
+%%    {ok, Values} = application:get_env(emqx_plugin_kafka, values),
+%%    BootstrapBroker = proplists:get_value(bootstrap_broker, Values),
+%%  PartitionStrategy= proplists:get_value(partition_strategy, Values),
+%%    %%application:set_env(ekaf, ekaf_partition_strategy, PartitionStrategy),
+%%    application:set_env(ekaf, ekaf_bootstrap_broker, BootstrapBroker),
+%%    {ok, _} = application:ensure_all_started(ekaf),
+%%    io:format("Initialized ekaf with ~p~n", [{"localhost", 9092}]).
 
 
 %% Called when the plugin application stop
