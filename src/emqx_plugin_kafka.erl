@@ -38,6 +38,7 @@ on_message_publish(Message, _Env) ->
     io:format("Publish ~s~n", [emqx_message:format(Message)]),
     {ok, Message}.
 
+
 ekaf_init(_Env) ->
     {ok, Values} = application:get_env(emqx_plugin_kafka, values),
     BootstrapBroker = proplists:get_value(bootstrap_broker, Values),
@@ -45,12 +46,19 @@ ekaf_init(_Env) ->
     application:load(ekaf),
     application:set_env(ekaf, ekaf_partition_strategy, PartitionStrategy),
     application:set_env(ekaf, ekaf_bootstrap_broker, BootstrapBroker),
- %%   {ok, _} = application:ensure_all_started(kafkamocker),
- %%   {ok, _} = application:ensure_all_started(gproc),
-  %%  {ok, _} = application:ensure_all_started(ekaf),
+    {ok, _} = application:ensure_all_started(ekaf),
     io:format("Initialized ekaf with ~p~n", [BootstrapBroker]).
 
 %% Called when the plugin application stop
 unload() ->   
     emqx:unhook('message.publish', fun ?MODULE:on_message_publish/2).
+
+
+
+
+
+
+
+
+
 
