@@ -44,9 +44,8 @@ on_message_publish(Message, _Env) ->
     Topic = emqx_message:topic(Message),
     Payload = emqx_message:payload(Message),
     Timestamp = emqx_message:timestamp(Message),
-
-     Json = [
-        {type, <<"published">>},
+    Json = [
+        {type, <<"publish">>},
         {id, Id},
         {from, From},
         {topic, Topic},
@@ -54,18 +53,11 @@ on_message_publish(Message, _Env) ->
         {qos, Qos},
         {timestamp, Timestamp}
        ],
-    ekaf:produce_async(<<"emq_broker_message">>, jsx:encode(Json)),
 
+    {ok, Values} = application:get_env(emqx_plugin_kafka, values),
+    KafkaTopic = proplists:get_value(kafka_producer_topic, Values),
 
- %%      aa =     jsx:encode([{<<"library">>,<<"jsx">>},{<<"awesome">>,true}]),
-
-
-
- %%    ekaf:produce_async(<<"emq_broker_message">>, Payload),
-
- %%     io:format("Test Json ~s~n", aa), 
-                 
- %%   io:format("Publish Json ~s~n", jsx:encode(Json)), 
+    ekaf:produce_async(KafkaTopic, jsx:encode(Json)), 
 
     {ok, Message}.
 
