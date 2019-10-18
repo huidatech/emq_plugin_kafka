@@ -35,7 +35,38 @@ on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
     {ok, Message};
 
 on_message_publish(Message, _Env) ->
-    io:format("Publish ~s~n", [emqx_message:format(Message)]),
+%%    io:format("Publish ~s~n", [emqx_message:format(Message)]),   
+    io:format("Publish ~s~n", [emqx_message:payload(Message)]), 
+
+    Id = emqx_message:id(Message),
+    Qos = emqx_message:qos(Message),
+    From = emqx_message:from(Message),
+    Topic = emqx_message:topic(Message),
+    Payload = emqx_message:payload(Message),
+    Timestamp = emqx_message:timestamp(Message),
+
+     Json = [
+        {type, <<"published">>},
+        {id, Id},
+        {from, From},
+        {topic, Topic},
+        {payload, Payload},
+        {qos, Qos},
+        {timestamp, Timestamp}
+       ],
+    ekaf:produce_async(<<"emq_broker_message">>, jsx:encode(Json)),
+
+
+ %%      aa =     jsx:encode([{<<"library">>,<<"jsx">>},{<<"awesome">>,true}]),
+
+
+
+ %%    ekaf:produce_async(<<"emq_broker_message">>, Payload),
+
+ %%     io:format("Test Json ~s~n", aa), 
+                 
+ %%   io:format("Publish Json ~s~n", jsx:encode(Json)), 
+
     {ok, Message}.
 
 
