@@ -38,26 +38,21 @@ on_message_publish(Message, _Env) ->
 %%    io:format("Publish ~s~n", [emqx_message:format(Message)]),   
     io:format("Publish ~s~n", [emqx_message:payload(Message)]), 
 
-    Id = emqx_message:id(Message),
-    Qos = emqx_message:qos(Message),
-    From = emqx_message:from(Message),
-    Topic = emqx_message:topic(Message),
-    Payload = emqx_message:payload(Message),
-    Timestamp = emqx_message:timestamp(Message),
-    Json = [
+   %% 构建json
+    KafkaJson = [
         {type, <<"publish">>},
-        {id, Id},
-        {from, From},
-        {topic, Topic},
-        {payload, Payload},
-        {qos, Qos},
-        {timestamp, Timestamp}
+        {id, emqx_message:id(Message)},
+        {from, emqx_message:from(Message)},
+        {topic, emqx_message:topic(Message)},
+        {payload, emqx_message:payload(Message)},
+        {qos, emqx_message:qos(Message)},
+        {timestamp, emqx_message:timestamp(Message)}
        ],
-
+    %% 从配置文件中读取发送到的kafka主题
     {ok, Values} = application:get_env(emqx_plugin_kafka, values),
     KafkaTopic = proplists:get_value(kafka_producer_topic, Values),
-
-    ekaf:produce_async(KafkaTopic, jsx:encode(Json)), 
+    %% 发送到kafka
+    ekaf:produce_async(KafkaTopic, jsx:encode(KafkaJson)), 
 
     {ok, Message}.
 
