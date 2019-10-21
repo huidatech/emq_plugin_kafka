@@ -37,11 +37,17 @@ on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
 on_message_publish(Message, _Env) ->
 %%    io:format("Publish ~s~n", [emqx_message:format(Message)]),   
     io:format("Publish ~s~n", [emqx_message:payload(Message)]), 
+    Id = emqx_message:id(Message),
+
+%%    io:format("String Id ~s~n",[lists:flatten(io_lib:format("~p", [Id]))]), 
+%%   io:format("Base62 Id ~s~n", [emqx_guid:to_base62(Id)]), 
+%%   io:format("Hexstr Id ~s~n", [emqx_guid:to_hexstr(Id)]), 
+
 
    %% 构建json
     KafkaJson = [
         {type, <<"publish">>},
-        {id, emqx_message:id(Message)},
+        {id, emqx_guid:to_hexstr(Id)},
         {from, emqx_message:from(Message)},
         {topic, emqx_message:topic(Message)},
         {payload, emqx_message:payload(Message)},
