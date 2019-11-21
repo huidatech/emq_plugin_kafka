@@ -64,7 +64,10 @@ on_message_publish(Message, _Env) ->
     %%ekaf:produce_async(KafkaTopic, jsx:encode(KafkaJson)), 
 
     %% 使用brod发送到kafka
-    ok = brod:produce_sync(brod_client_1, KafkaTopic, 0, <<"key2">>, jsx:encode(KafkaJson)),
+    PartitionFun = fun(_Topic, PartitionsCount, _Key, _Value) ->
+                   {ok, crypto:rand_uniform(0, PartitionsCount)}
+                   end,
+    ok = brod:produce_sync(brod_client_1, KafkaTopic, PartitionFun, <<"key2">>, jsx:encode(KafkaJson)),
 
     {ok, Message}.
 
@@ -80,30 +83,27 @@ ekaf_init(_Env) ->
     io:format("Initialized ekaf with ~p~n", [BootstrapBroker]).
 
 
-%% ===================================================================
-%% brod_init https://github.com/klarna/brod
-%% ===================================================================
+
+%% 初始化brod https://github.com/klarna/brod
 brod_init(_Env) ->
     {ok, _} = application:ensure_all_started(brod), 
     {ok, Values} = application:get_env(emqx_plugin_kafka, values),
-    BootstrapBroker = proplists:get_value(bootstrap_broker, Values),   
+    BootstrapBroker = proplists:get_value(bootstrap_broker, Values),  
     KafkaTopic = proplists:get_value(kafka_producer_topic, Values),
     ClientConfig = [],%% socket error recovery
     ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
     ok = brod:start_producer(brod_client_1, KafkaTopic, _ProducerConfig = []),   
     io:format("Init brod with ~p~n", [BootstrapBroker]).
 
+%% 关闭brod
+brod_close() ->
+    {ok, Values} = application:get_env(emqx_plugin_kafka, values),
+    BootstrapBroker = proplists:get_value(bootstrap_broker, Values), 
+    io:format("Close brod with ~p~n", [BootstrapBroker]),
+    brod:stop_client(brod_client_1).
+
 
 %% Called when the plugin application stop
 unload() ->   
+    brod_close(),
     emqx:unhook('message.publish', fun ?MODULE:on_message_publish/2).
-
-
-
-
-
-
-
-
-
-
