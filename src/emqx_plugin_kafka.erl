@@ -27,7 +27,8 @@
 
 %% Called when the plugin application start
 load(Env) ->   
-    ekaf_init([Env]),
+    %% ekaf_init([Env]),
+    brod_init([Env]),
     emqx:hook('message.publish', fun ?MODULE:on_message_publish/2, [Env]).
 
 %% Transform message and return
@@ -37,7 +38,7 @@ on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
 on_message_publish(Message, _Env) ->
 %%    io:format("Publish ~s~n", [emqx_message:format(Message)]),   
     io:format("Publish ~s~n", [emqx_message:payload(Message)]), 
-    Id = emqx_message:id(Message),
+    
 
 %%    io:format("String Id ~s~n",[lists:flatten(io_lib:format("~p", [Id]))]), 
 %%   io:format("Base62 Id ~s~n", [emqx_guid:to_base62(Id)]), 
@@ -45,6 +46,7 @@ on_message_publish(Message, _Env) ->
 
 
    %% 构建json
+    Id = emqx_message:id(Message),
     KafkaJson = [
         {type, <<"publish">>},
         {id, emqx_guid:to_hexstr(Id)},
@@ -57,8 +59,12 @@ on_message_publish(Message, _Env) ->
     %% 从配置文件中读取发送到的kafka主题
     {ok, Values} = application:get_env(emqx_plugin_kafka, values),
     KafkaTopic = proplists:get_value(kafka_producer_topic, Values),
-    %% 发送到kafka
-    ekaf:produce_async(KafkaTopic, jsx:encode(KafkaJson)), 
+   
+    %% 使用ekaf发送到kafka
+    %%ekaf:produce_async(KafkaTopic, jsx:encode(KafkaJson)), 
+
+    %% 使用brod发送到kafka
+    ok = brod:produce_sync(brod_client_1, KafkaTopic, 0, <<"key2">>, jsx:encode(KafkaJson)),
 
     {ok, Message}.
 
@@ -72,6 +78,21 @@ ekaf_init(_Env) ->
     application:set_env(ekaf, ekaf_bootstrap_broker, BootstrapBroker),
     {ok, _} = application:ensure_all_started(ekaf),
     io:format("Initialized ekaf with ~p~n", [BootstrapBroker]).
+
+
+%% ===================================================================
+%% brod_init https://github.com/klarna/brod
+%% ===================================================================
+brod_init(_Env) ->
+    {ok, _} = application:ensure_all_started(brod), 
+    {ok, Values} = application:get_env(emqx_plugin_kafka, values),
+    BootstrapBroker = proplists:get_value(bootstrap_broker, Values),   
+    KafkaTopic = proplists:get_value(kafka_producer_topic, Values),
+    ClientConfig = [],%% socket error recovery
+    ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
+    ok = brod:start_producer(brod_client_1, KafkaTopic, _ProducerConfig = []),   
+    io:format("Init brod with ~p~n", [BootstrapBroker]).
+
 
 %% Called when the plugin application stop
 unload() ->   
